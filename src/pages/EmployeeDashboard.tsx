@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Plus, Trash2, List, LogOut, CheckCircle2, Search, Calendar } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
+import PrintFieldLogo from '../components/PrintFieldLogo';
 
 type OrderItem = {
   id: string;
@@ -188,14 +189,22 @@ export default function EmployeeDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-gray-900">Employee Dashboard</h1>
+      <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-10 animate-fade-in">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center">
+          <div className="flex items-center">
+            <PrintFieldLogo layout="horizontal" iconSize="md" />
+            <span className="ml-3.5 bg-emerald-50 text-emerald-700 text-[10px] px-2.5 py-1 rounded-md font-semibold font-mono tracking-wider border border-emerald-100">
+              EMPLOYEE PORTAL
+            </span>
+          </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-gray-700">Logged in as: {user?.username}</span>
+            <span className="text-sm font-medium text-gray-700 font-sans flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+              Hi, {user?.username}
+            </span>
             <button
               onClick={logout}
-              className="flex items-center text-sm text-gray-500 hover:text-gray-900"
+              className="flex items-center text-sm text-gray-500 hover:text-red-600 transition-colors"
             >
               <LogOut className="h-4 w-4 mr-1" /> Logout
             </button>

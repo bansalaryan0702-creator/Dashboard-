@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Lock, User } from 'lucide-react';
+import PrintFieldLogo from '../components/PrintFieldLogo';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -41,13 +42,16 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg flex flex-col items-center">
+        <div className="w-full flex justify-center pt-2">
+          <PrintFieldLogo layout="vertical" iconSize="xl" />
+        </div>
+        <div className="w-full">
+          <h2 className="mt-4 text-center text-2xl font-extrabold text-[#2D1F66]">
             Sign in to your account
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Internal Job/Ticket Tracking System
+          <p className="mt-1.5 text-center text-xs text-gray-500 font-mono">
+            Job & Ticket Management
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
@@ -100,11 +104,6 @@ export default function Login() {
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
-          </div>
-          
-          <div className="mt-4 text-xs text-gray-500 text-center">
-            <p>For testing, use:</p>
-            <p>Admin: admin / password123</p>
           </div>
         </form>
       </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { format, isToday, parseISO } from 'date-fns';
 import { LogOut, UserPlus, Users, LayoutList, CalendarDays, Search } from 'lucide-react';
+import PrintFieldLogo from '../components/PrintFieldLogo';
 
 type UserData = { id: string, username: string, password?: string };
 type Ticket = {
@@ -25,6 +26,7 @@ export default function AdminDashboard() {
   const [newPassword, setNewPassword] = useState('');
   const [createMsg, setCreateMsg] = useState({ text: '', type: '' });
   const [search, setSearch] = useState('');
+  const [searchDate, setSearchDate] = useState('');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'employees'>('dashboard');
 
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
@@ -128,25 +130,41 @@ export default function AdminDashboard() {
   }, {} as Record<string, { jobs: number, itemsCount: number }>);
 
   // Filtered tickets
-  const filteredTickets = tickets.filter(t => 
-    t.customerName.toLowerCase().includes(search.toLowerCase()) ||
-    t.employeeName.toLowerCase().includes(search.toLowerCase()) ||
-    t.items.some(i => i.productName.toLowerCase().includes(search.toLowerCase()))
-  );
+  const filteredTickets = tickets.filter(t => {
+    const term = search.toLowerCase();
+    const matchText = 
+      (t.customerName?.toLowerCase() || '').includes(term) ||
+      (t.employeeName?.toLowerCase() || '').includes(term) ||
+      (t.requesterName?.toLowerCase() || '').includes(term) ||
+      (t.purchaseOrderNumber?.toLowerCase() || '').includes(term) ||
+      t.items.some(i => (i.productName?.toLowerCase() || '').includes(term));
+      
+    // Match date if selected (checks both handoverDate and ticketDate)
+    const matchDate = searchDate 
+      ? t.handoverDate === searchDate || t.ticketDate.startsWith(searchDate)
+      : true;
+      
+    return matchText && matchDate;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      <header className="bg-white shadow z-10 sticky top-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-gray-900 flex items-center">
-            <LayoutList className="h-5 w-5 mr-2 text-blue-600" />
-            Admin Dashboard
-          </h1>
+      <header className="bg-white shadow z-10 sticky top-0 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center">
+          <div className="flex items-center">
+            <PrintFieldLogo layout="horizontal" iconSize="md" />
+            <span className="ml-3.5 bg-indigo-50 text-[#2D1F66] text-[10px] px-2.5 py-1 rounded-md font-semibold font-mono tracking-wider border border-indigo-100">
+              ADMIN PORTAL
+            </span>
+          </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-gray-700">Admin</span>
+            <span className="text-sm font-medium text-gray-700 font-sans flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-indigo-600 inline-block animate-pulse"></span>
+              Admin
+            </span>
             <button
               onClick={logout}
-              className="flex items-center text-sm text-gray-500 hover:text-gray-900"
+              className="flex items-center text-sm text-gray-500 hover:text-red-600 transition-colors"
             >
               <LogOut className="h-4 w-4 mr-1" /> Logout
             </button>
@@ -216,19 +234,47 @@ export default function AdminDashboard() {
 
             {/* RIGHT COLUMN: Global History Log */}
             <section className="bg-white rounded-xl shadow-sm border border-gray-100 lg:col-span-2 flex flex-col h-[800px]">
-              <div className="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <h2 className="text-lg font-semibold text-gray-800">Global History Log</h2>
-                <div className="relative w-full sm:w-64">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-4 w-4 text-gray-400" />
+              <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-800">Global History Log</h2>
+                  <p className="text-xs text-gray-500 mt-0.5">Filter and search tickets raised by system employees</p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                  <div className="relative flex-1 sm:w-64">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Search className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Search company, employee, requester, PO..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 placeholder-gray-500 text-sm focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    />
                   </div>
-                  <input
-                    type="text"
-                    placeholder="Search tickets..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
+                  <div className="relative sm:w-44">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <CalendarDays className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input
+                      type="date"
+                      value={searchDate}
+                      onChange={(e) => setSearchDate(e.target.value)}
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-600 focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      title="Filter by Ticket Date or Handover Date"
+                    />
+                  </div>
+                  {(search || searchDate) && (
+                    <button
+                      onClick={() => {
+                        setSearch('');
+                        setSearchDate('');
+                      }}
+                      className="px-3 py-2 text-xs bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-lg font-medium transition-colors"
+                    >
+                      Reset
+                    </button>
+                  )}
                 </div>
               </div>
               
